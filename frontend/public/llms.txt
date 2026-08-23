@@ -1,0 +1,12 @@
+# PythonPro
+
+> PythonPro is a beginner-friendly website for learning and practicing Python through interactive lessons, questions, coding challenges, quizzes, and projects.
+
+## Public pages
+
+- [Home](https://pythonprolearn.vercel.app/)
+- [About](https://pythonprolearn.vercel.app/about)
+- [Frequently Asked Questions](https://pythonprolearn.vercel.app/faq)
+- [Contact](https://pythonprolearn.vercel.app/contact)
+- [Log in](https://pythonprolearn.vercel.app/login)
+- [Register](https://pythonprolearn.vercel.app/register)
