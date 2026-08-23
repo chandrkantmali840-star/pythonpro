@@ -1,0 +1,21 @@
+{
+  "name": "PythonPro",
+  "short_name": "PythonPro",
+  "description": "Learn Python through interactive coding.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#061a37",
+  "theme_color": "#061a37",
+  "icons": [
+    {
+      "src": "/assets/pythonpro-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/pythonpro-icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

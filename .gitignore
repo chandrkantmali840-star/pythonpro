@@ -1,0 +1,28 @@
+# Frontend dependencies and builds
+frontend/node_modules/
+frontend/dist/
+frontend/.vercel/
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+
+# Backend environments and secrets
+backend/.venv/
+backend/venv/
+.env
+.env.*
+!.env.example
+
+# Python and tooling output
+__pycache__/
+*.py[cod]
+.pytest_cache/
+tmp/
+
+# Local logs and editor files
+*.log
+.DS_Store
+.vscode/
+.idea/
+.codex-write-test
+.retry-write-test
