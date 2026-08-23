@@ -306,6 +306,15 @@ function PublicFooter() {
       <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-5 sm:flex-row sm:items-center">
         <div>
           <BrandLogo />
+          <p className="mt-2 text-sm font-medium text-slate-600 dark:text-slate-300">
+            Author: Yash Mali
+          </p>
+          <a
+            className="mt-1 block text-sm text-indigo-600 hover:underline focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:text-indigo-400"
+            href="mailto:yashmali982609@gmail.com"
+          >
+            yashmali982609@gmail.com
+          </a>
           <p className="mt-2 text-sm text-slate-500">
             Learn • Practice • Master
           </p>
