@@ -1,4 +1,10 @@
-import { useMemo, useRef, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Bug, Code2, Save, Swords } from "lucide-react";
 import { PageTitle, ProgressBar } from "../components/ui";
@@ -500,7 +506,16 @@ export function Playground() {
     [execution, setExecution] = useState<ExecutionResult | null>(null),
     [running, setRunning] = useState(false),
     editorRef = useRef<HTMLTextAreaElement>(null),
-    busyRef = useRef(false);
+    busyRef = useRef(false),
+    runtimeStatus = useSyncExternalStore(
+      executionService.subscribe,
+      executionService.getStatus,
+      executionService.getStatus,
+    );
+  useEffect(() => {
+    void executionService.prepare().catch(() => undefined);
+  }, []);
+
   const run = async () => {
     if (busyRef.current || !code.trim()) return;
     busyRef.current = true;
@@ -530,7 +545,7 @@ export function Playground() {
     <div className="page">
       <PageTitle
         title="Python Playground"
-        subtitle="Experiment safely. This educational demo previews common output and never executes arbitrary code on the server."
+        subtitle="Run real Python safely in your browser without sending code to the server."
       />
       <div className="grid gap-4 lg:grid-cols-[1fr_2fr]">
         <aside className="card">
@@ -566,9 +581,15 @@ export function Playground() {
           <header className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-800">
             <div>
               <h2 className="font-bold">Python Editor</h2>
-              <p className="text-xs text-slate-500">Safe learning mode</p>
+              <p className="text-xs text-slate-500">Browser-isolated Python</p>
             </div>
-            <span className="badge">Python 3</span>
+            <span className="badge">
+              {runtimeStatus === "ready"
+                ? "Python 3 • Ready"
+                : runtimeStatus === "failed"
+                  ? "Python unavailable"
+                  : "Preparing Python..."}
+            </span>
           </header>
           <textarea
             ref={editorRef}
@@ -607,7 +628,7 @@ export function Playground() {
           <div className="flex flex-wrap gap-2 border-t border-slate-200 p-3 dark:border-slate-700">
             <button
               className="btn-primary"
-              disabled={running || !code.trim()}
+              disabled={runtimeStatus !== "ready" || running || !code.trim()}
               onClick={run}
             >
               <Code2 size={16} />
@@ -644,7 +665,11 @@ export function Playground() {
               Save snippet
             </button>
           </div>
-          <ExecutionConsole execution={execution} running={running} />
+          <ExecutionConsole
+            execution={execution}
+            running={running}
+            runtimeStatus={runtimeStatus}
+          />
         </section>
       </div>
     </div>

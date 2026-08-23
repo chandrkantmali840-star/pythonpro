@@ -1,43 +1,41 @@
 import { describe, expect, it } from "vitest";
-import { simulate } from "./executionService";
+import { executionService, toExecutionResult } from "./executionService";
 
-describe("safe Python execution service", () => {
-  it.each([
-    ['print("Hello Python")', "Hello Python"],
-    ["a = 10\nb = 20\nprint(a + b)", "30"],
-    ["for i in range(3):\n    print(i)", "0\n1\n2"],
-    ["numbers = [10, 20, 30]\nprint(numbers[1])", "20"],
-    [
-      "fruits = ['Apple', 'Mango', 'Banana']\nfruits.append('Orange')\nfruits[1] = 'Pear'\nprint(fruits[-2:])",
-      "['Banana', 'Orange']",
-    ],
-  ])("runs a supported beginner program", (code, output) => {
-    expect(simulate(code)).toMatchObject({ status: "success", output });
+describe("Pyodide Python execution service", () => {
+  it("uses the browser worker runtime", () => {
+    expect(executionService.mode).toBe("pyodide-worker");
   });
 
-  it("shows a syntax error with its line", () => {
-    expect(simulate('if True\n    print("Hello")')).toMatchObject({
-      status: "error",
-      error: { type: "SyntaxError", line: 1 },
-    });
+  it("rejects oversized code before starting Python", async () => {
+    await expect(
+      executionService.run({ code: "x".repeat(20_001) }),
+    ).resolves.toMatchObject({ status: "rejected" });
   });
 
-  it("shows a clear no-output state", () => {
-    expect(simulate("x = 10")).toMatchObject({
+  it("returns a clear empty-program result before starting Python", async () => {
+    await expect(executionService.run({ code: "   " })).resolves.toMatchObject({
       status: "empty",
       message: "Program finished with no output.",
     });
   });
 
-  it("accepts simple stdin without executing Python", () => {
+  it("maps real stdout to a successful result", () => {
     expect(
-      simulate('name = input("Name: ")\nprint(name)', "Yash"),
-    ).toMatchObject({ status: "success", output: "Name: \nYash" });
+      toExecutionResult({ type: "result", id: 1, output: "Hello Python" }),
+    ).toMatchObject({ status: "success", output: "Hello Python" });
   });
 
-  it("clearly reports code outside the safe runner", () => {
-    expect(simulate("import os\nos.system('whoami')").status).toBe(
-      "unsupported",
-    );
+  it("preserves real Python errors and source lines", () => {
+    const error = [
+      "Traceback (most recent call last):",
+      '  File "<exec>", line 2, in <module>',
+      "NameError: name 'missing' is not defined",
+    ].join("\n");
+    expect(
+      toExecutionResult({ type: "result", id: 1, output: "", error }),
+    ).toMatchObject({
+      status: "error",
+      error: { type: "NameError", line: 2 },
+    });
   });
 });

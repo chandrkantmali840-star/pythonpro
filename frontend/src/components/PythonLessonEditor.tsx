@@ -1,4 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { Check, Play, RotateCcw, Trash2 } from "lucide-react";
 import type { MicroActivity } from "../types";
 import {
@@ -43,7 +49,16 @@ export function PythonLessonEditor({
         ).join("\n"),
       [code],
     ),
-    needsInput = code.includes("input(");
+    needsInput = code.includes("input("),
+    runtimeStatus = useSyncExternalStore(
+      executionService.subscribe,
+      executionService.getStatus,
+      executionService.getStatus,
+    );
+
+  useEffect(() => {
+    void executionService.prepare().catch(() => undefined);
+  }, []);
 
   useEffect(() => {
     if (code === starter) {
@@ -123,7 +138,6 @@ export function PythonLessonEditor({
       restoreSelection(edit.start, edit.end);
     }
   };
-
   const restoreSelection = (start: number, end: number) =>
     window.requestAnimationFrame(() => {
       textareaRef.current?.focus();
@@ -135,10 +149,16 @@ export function PythonLessonEditor({
       <header className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-800">
         <div>
           <p className="font-bold">Python Editor</p>
-          <p className="text-xs text-slate-500">Safe learning mode</p>
+          <p className="text-xs text-slate-500">Browser-isolated Python</p>
         </div>
         <div className="flex items-center gap-3 text-xs text-slate-500">
-          <span className="badge">Python 3</span>
+          <span className="badge">
+            {runtimeStatus === "ready"
+              ? "Python 3 • Ready"
+              : runtimeStatus === "failed"
+                ? "Python unavailable"
+                : "Preparing Python..."}
+          </span>
           <span aria-live="polite">
             {saveState === "saving"
               ? "Saving…"
@@ -189,7 +209,7 @@ export function PythonLessonEditor({
             placeholder="Enter one input value per line"
           />
           <p className="mt-2 text-xs text-slate-500">
-            The safe demo uses these lines for simple input() examples.
+            Each line is provided to input() in order.
           </p>
         </div>
       )}
@@ -197,7 +217,7 @@ export function PythonLessonEditor({
       <div className="flex flex-wrap items-center gap-2 border-t border-slate-200 p-3 dark:border-slate-700">
         <button
           className="btn-primary"
-          disabled={running || !code.trim()}
+          disabled={runtimeStatus !== "ready" || running || !code.trim()}
           onClick={execute}
         >
           <Play size={16} />
@@ -205,7 +225,13 @@ export function PythonLessonEditor({
         </button>
         <button
           className="btn-secondary"
-          disabled={running || checking || claimed || !code.trim()}
+          disabled={
+            runtimeStatus !== "ready" ||
+            running ||
+            checking ||
+            claimed ||
+            !code.trim()
+          }
           onClick={check}
         >
           <Check size={16} />
@@ -225,7 +251,11 @@ export function PythonLessonEditor({
         </button>
       </div>
 
-      <ExecutionConsole execution={execution} running={running} />
+      <ExecutionConsole
+        execution={execution}
+        running={running}
+        runtimeStatus={runtimeStatus}
+      />
     </section>
   );
 }
@@ -233,21 +263,23 @@ export function PythonLessonEditor({
 export function ExecutionConsole({
   execution,
   running,
+  runtimeStatus,
 }: {
   execution: ExecutionResult | null;
   running: boolean;
+  runtimeStatus: "idle" | "loading" | "ready" | "failed";
 }) {
   const state = running
     ? "RUNNING"
-    : execution?.status === "error" ||
-        execution?.status === "rejected" ||
-        execution?.status === "unsupported"
+    : execution?.status === "error" || execution?.status === "rejected"
       ? "ERROR"
       : execution?.status === "success"
         ? "SUCCESS"
         : execution?.status === "empty"
           ? "NO OUTPUT"
-          : "READY";
+          : runtimeStatus === "loading" || runtimeStatus === "idle"
+            ? "LOADING"
+            : "READY";
   return (
     <div
       className="min-h-32 border-t border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950"
@@ -267,19 +299,15 @@ export function ExecutionConsole({
       </div>
       {running ? (
         <p className="text-sm text-slate-500">Running…</p>
-      ) : !execution ? (
-        <p className="text-sm text-slate-500">
-          Run your code to see the output.
-        </p>
-      ) : execution.status === "success" ? (
+      ) : execution?.status === "success" ? (
         <pre className="m-0 max-h-64 overflow-auto whitespace-pre-wrap break-words border-0 bg-transparent p-0 text-sm text-slate-900 dark:text-slate-100">
           <code>{execution.output}</code>
         </pre>
-      ) : execution.status === "empty" ? (
+      ) : execution?.status === "empty" ? (
         <p className="text-sm text-slate-600 dark:text-slate-300">
           Program finished with no output.
         </p>
-      ) : (
+      ) : execution ? (
         <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-950 dark:border-red-900 dark:bg-red-950/40 dark:text-red-100">
           <p className="font-bold">
             {execution.error?.type || "Could not run"}
@@ -292,9 +320,15 @@ export function ExecutionConsole({
             </p>
           )}
         </div>
+      ) : runtimeStatus === "loading" || runtimeStatus === "idle" ? (
+        <p className="text-sm text-slate-500">Preparing Python...</p>
+      ) : (
+        <p className="text-sm text-slate-500">
+          Run your code to see the output.
+        </p>
       )}
       <p className="mt-3 text-xs text-slate-500">
-        Safe demo runner — code is not executed on the Flask server.
+        Python runs in an isolated browser worker, not on the Flask server.
       </p>
     </div>
   );

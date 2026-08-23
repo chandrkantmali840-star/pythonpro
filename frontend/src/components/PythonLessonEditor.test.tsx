@@ -36,6 +36,10 @@ describe("Python editor keyboard behavior", () => {
   });
 
   it("blocks duplicate Run clicks while execution is active", async () => {
+    const status = vi
+      .spyOn(executionService, "getStatus")
+      .mockReturnValue("ready");
+    const prepare = vi.spyOn(executionService, "prepare").mockResolvedValue();
     let finish!: (value: {
       status: "success";
       output: string;
@@ -65,6 +69,8 @@ describe("Python editor keyboard behavior", () => {
     );
     expect(screen.getByText("Hello")).toBeTruthy();
     run.mockRestore();
+    status.mockRestore();
+    prepare.mockRestore();
   });
 });
 

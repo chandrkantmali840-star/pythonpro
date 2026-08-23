@@ -47,10 +47,7 @@ export function validateChallenge(
       meaningful = /\b(print|def|class|for|if|return)\b|[A-Za-z_]\w*\s*=/.test(
         code,
       ),
-      runnable =
-        execution.status === "success" ||
-        execution.status === "empty" ||
-        execution.status === "unsupported",
+      runnable = execution.status === "success" || execution.status === "empty",
       required = activity.validation?.requiredTokens || [],
       hasRequiredFix = required.every((token) => code.includes(token));
     return {
