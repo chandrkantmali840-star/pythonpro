@@ -266,6 +266,7 @@ export function Register() {
             }
             className="field"
             placeholder={p}
+            aria-label={p}
           />
         ))}
         {error && <p className="text-red-600 sm:col-span-2">{error}</p>}
@@ -315,7 +316,7 @@ function PublicFooter() {
           >
             yashmali982609@gmail.com
           </a>
-          <p className="mt-2 text-sm text-slate-500">
+          <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
             Learn • Practice • Master
           </p>
         </div>

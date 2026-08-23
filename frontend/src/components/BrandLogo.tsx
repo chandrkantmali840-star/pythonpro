@@ -12,10 +12,10 @@ export function BrandLogo({
   if (variant === "full")
     return (
       <img
-        src="/assets/pythonpro-logo.png"
+        src="/assets/pythonpro-logo.webp"
         alt="PythonPro — Learn, Practice, Master"
-        width={900}
-        height={900}
+        width={600}
+        height={600}
         loading={eager ? "eager" : "lazy"}
         fetchPriority={eager ? "high" : "auto"}
         className={`h-auto w-full object-contain ${className}`}
@@ -24,11 +24,11 @@ export function BrandLogo({
   return (
     <span className={`inline-flex items-center gap-2.5 ${className}`}>
       <img
-        src="/assets/pythonpro-icon.png"
+        src="/assets/pythonpro-icon.webp"
         alt=""
         aria-hidden="true"
-        width={512}
-        height={512}
+        width={80}
+        height={80}
         loading={eager ? "eager" : "lazy"}
         className="h-10 w-10 shrink-0 rounded-xl object-contain"
       />
