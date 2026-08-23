@@ -1,6 +1,6 @@
 import os
 
-os.environ.setdefault("JWT_SECRET_KEY", "test-secret-that-is-long-enough")
+os.environ.setdefault("JWT_SECRET_KEY", "test-secret-that-is-at-least-32-bytes")
 
 from app import create_app
 from app.extensions import db
@@ -12,7 +12,7 @@ def make_app():
         {
             "TESTING": True,
             "SQLALCHEMY_DATABASE_URI": "sqlite://",
-            "JWT_SECRET_KEY": "test-secret-that-is-long-enough",
+            "JWT_SECRET_KEY": "test-secret-that-is-at-least-32-bytes",
             "CORS_ORIGINS": ["http://localhost:5173"],
         }
     )
