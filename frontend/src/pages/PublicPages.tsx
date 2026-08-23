@@ -140,12 +140,13 @@ const authSchema = z.object({
 export function Login() {
   const { login } = useApp(),
     nav = useNavigate(),
-    [error, setError] = useState("");
+    [error, setError] = useState(""),
+    [submitting, setSubmitting] = useState(false);
   return (
     <AuthShell title="Welcome back">
       <form
         className="space-y-4"
-        onSubmit={(e) => {
+        onSubmit={async (e) => {
           e.preventDefault();
           const f = new FormData(e.currentTarget),
             x = authSchema.safeParse(Object.fromEntries(f));
@@ -153,8 +154,20 @@ export function Login() {
             return setError(
               "Enter a valid email and at least 8 password characters.",
             );
-          if (login(x.data.email, x.data.password)) nav("/dashboard");
-          else setError("Email or password is incorrect.");
+          setSubmitting(true);
+          setError("");
+          try {
+            await login(x.data.email, x.data.password);
+            nav("/dashboard");
+          } catch (loginError) {
+            setError(
+              loginError instanceof Error
+                ? loginError.message
+                : "Unable to log in.",
+            );
+          } finally {
+            setSubmitting(false);
+          }
         }}
       >
         <input
@@ -176,7 +189,9 @@ export function Login() {
             {error}
           </p>
         )}
-        <button className="btn-primary w-full">Log in</button>
+        <button disabled={submitting} className="btn-primary w-full">
+          {submitting ? "Logging in…" : "Log in"}
+        </button>
         <p className="text-center text-sm">
           New here?{" "}
           <Link className="text-indigo-600" to="/register">
@@ -190,30 +205,43 @@ export function Login() {
 export function Register() {
   const { register } = useApp(),
     nav = useNavigate(),
-    [error, setError] = useState("");
+    [error, setError] = useState(""),
+    [submitting, setSubmitting] = useState(false);
   return (
     <AuthShell title="Create your account">
       <form
         className="grid gap-3 sm:grid-cols-2"
-        onSubmit={(e) => {
+        onSubmit={async (e) => {
           e.preventDefault();
           const f = Object.fromEntries(new FormData(e.currentTarget));
           if (String(f.password).length < 8 || f.password !== f.confirm)
             return setError(
               "Passwords must match and contain at least 8 characters.",
             );
-          register(
-            {
-              id: crypto.randomUUID(),
-              fullName: String(f.fullName),
-              email: String(f.email),
-              studentId: String(f.studentId),
-              course: String(f.course),
-              year: String(f.year),
-            },
-            String(f.password),
-          );
-          nav("/onboarding");
+          setSubmitting(true);
+          setError("");
+          try {
+            await register(
+              {
+                id: crypto.randomUUID(),
+                fullName: String(f.fullName),
+                email: String(f.email),
+                studentId: String(f.studentId),
+                course: String(f.course),
+                year: String(f.year),
+              },
+              String(f.password),
+            );
+            nav("/onboarding");
+          } catch (registerError) {
+            setError(
+              registerError instanceof Error
+                ? registerError.message
+                : "Unable to create the account.",
+            );
+          } finally {
+            setSubmitting(false);
+          }
         }}
       >
         {[
@@ -241,7 +269,9 @@ export function Register() {
           />
         ))}
         {error && <p className="text-red-600 sm:col-span-2">{error}</p>}
-        <button className="btn-primary sm:col-span-2">Create account</button>
+        <button disabled={submitting} className="btn-primary sm:col-span-2">
+          {submitting ? "Creating account…" : "Create account"}
+        </button>
       </form>
     </AuthShell>
   );

@@ -1,1 +1,1 @@
-from .entities import Achievement,Bookmark,CodingProblem,CodingSubmission,Lesson,LessonProgress,Notification,Project,ProjectProgress,Question,QuestionAttempt,Quiz,QuizAttempt,StudentAchievement,StudentProfile,User
+from .entities import Achievement,Bookmark,CodingProblem,CodingSubmission,Lesson,LessonProgress,Notification,Project,ProjectProgress,Question,QuestionAttempt,Quiz,QuizAttempt,StudentAchievement,StudentProfile,User,UserState

@@ -2,17 +2,17 @@
 
 **Learn • Practice • Master**
 
-PythonPro is a modular React + Flask learning platform. Demo mode is fully interactive with centralized local persistence; the Flask API provides JWT/bcrypt authentication, SQLAlchemy models, and MySQL-ready endpoints. Server-side code execution is deliberately disabled: the execution service returns safe test previews until an isolated judge is connected.
+PythonPro is a modular React + Flask learning platform. Demo mode is fully interactive with centralized local persistence. API mode provides JWT/bcrypt authentication and stores each student's complete learning state in MySQL. Server-side code execution is deliberately disabled: the execution service returns safe test previews until an isolated judge is connected.
 
 ## Run the frontend
 
 ```bash
 cd frontend
-npm install
-npm run dev
+pnpm install
+pnpm run dev
 ```
 
-Create an account in the UI. Progress, settings, attempts, bookmarks, and achievements persist in the browser.
+Create an account in the UI. Without API mode, progress stays in this browser only. Local demo passwords use a salted PBKDF2 hash and are never stored as plain text.
 
 The current production frontend is fully usable without the Flask API. It uses centralized browser persistence and a safe educational code runner. Set `VITE_API_URL` only when a separately hosted API is available.
 
@@ -38,7 +38,13 @@ set DATABASE_URL=mysql+pymysql://user:password@localhost/pythonpro
 python run.py
 ```
 
-Apply `database/schema.sql` and `database/seed.sql` for a native MySQL setup. SQLite is supported for local API smoke testing.
+Apply `database/schema.sql` and `database/seed.sql` for a native MySQL setup. SQLite is supported for local API smoke testing. Set `VITE_API_URL` in the frontend deployment to the public API URL to enable accounts that work across devices.
+
+## GitHub Codespaces
+
+The repository includes `.devcontainer` configuration with React, Flask, and MySQL. Create a Codespace from the repository and wait for setup to finish. The frontend and backend start automatically, and the Vite development server proxies `/api` to Flask. MySQL data uses a Docker volume inside the Codespace.
+
+Codespaces is for development and testing, not permanent public hosting. It stops after inactivity and can be deleted. Production accounts require the Flask API and MySQL database to be deployed on persistent services.
 
 ## Data validation
 
@@ -58,4 +64,4 @@ Lessons use an eight-step loop: micro concept, output prediction, editable code,
 - JWT secrets are required environment variables.
 - CORS is allow-listed through `CORS_ORIGINS`.
 - Student code is never evaluated inside Flask.
-- Demo authentication is intentionally local-only and isolated behind the app context; use API mode for multi-user deployment.
+- Demo authentication is local-only and uses a salted PBKDF2 hash; API mode is required for multi-device accounts.

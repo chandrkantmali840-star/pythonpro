@@ -44,8 +44,14 @@ import {
   Revision,
 } from "./pages/LearningModesPages";
 function Protected() {
-  const { state } = useApp(),
+  const { state, authReady } = useApp(),
     loc = useLocation();
+  if (!authReady)
+    return (
+      <main className="grid min-h-screen place-items-center">
+        <p className="text-sm text-slate-500">Loading your PythonPro account…</p>
+      </main>
+    );
   return state.user ? (
     <AppLayout />
   ) : (

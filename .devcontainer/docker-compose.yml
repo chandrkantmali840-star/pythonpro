@@ -1,0 +1,34 @@
+services:
+  app:
+    image: mcr.microsoft.com/devcontainers/python:1-3.12-bookworm
+    command: sleep infinity
+    volumes:
+      - ..:/workspaces/pythonpro:cached
+    environment:
+      DATABASE_URL: mysql+pymysql://pythonpro:pythonpro_dev@mysql:3306/pythonpro
+      JWT_SECRET_KEY: codespaces-development-secret-change-for-production
+      CORS_ORIGINS: "*"
+      FLASK_DEBUG: "1"
+      PORT: "5000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: pythonpro
+      MYSQL_USER: pythonpro
+      MYSQL_PASSWORD: pythonpro_dev
+      MYSQL_ROOT_PASSWORD: pythonpro_root_dev
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-ppythonpro_root_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  mysql-data:

@@ -27,18 +27,24 @@ export const initialState: AppState = {
   },
 };
 export const persistenceService = {
+  hydrate(saved: Partial<AppState> | null | undefined): AppState {
+    const value = { ...(saved || {}) } as Partial<AppState> & {
+      videoProgress?: unknown;
+      streakDates?: string[];
+    };
+    delete value.videoProgress;
+    const streak = normalizeStreak(value.streak, value.streakDates || []);
+    delete value.streakDates;
+    return {
+      ...initialState,
+      ...value,
+      streak,
+      settings: { ...initialState.settings, ...value.settings },
+    };
+  },
   load(): AppState {
     try {
-      const saved = JSON.parse(localStorage.getItem(KEY) || "{}");
-      delete saved.videoProgress;
-      const streak = normalizeStreak(saved.streak, saved.streakDates || []);
-      delete saved.streakDates;
-      return {
-        ...initialState,
-        ...saved,
-        streak,
-        settings: { ...initialState.settings, ...saved.settings },
-      };
+      return this.hydrate(JSON.parse(localStorage.getItem(KEY) || "{}"));
     } catch {
       return initialState;
     }

@@ -3,9 +3,11 @@ from ..extensions import db
 def now():return datetime.now(timezone.utc)
 class TimestampMixin:created_at=db.Column(db.DateTime(timezone=True),default=now,nullable=False);updated_at=db.Column(db.DateTime(timezone=True),default=now,onupdate=now,nullable=False)
 class User(TimestampMixin,db.Model):
- __tablename__='users';id=db.Column(db.Integer,primary_key=True);email=db.Column(db.String(255),unique=True,index=True,nullable=False);password_hash=db.Column(db.String(255),nullable=False);full_name=db.Column(db.String(120),nullable=False);profile=db.relationship('StudentProfile',backref='user',uselist=False,cascade='all,delete-orphan')
+ __tablename__='users';id=db.Column(db.Integer,primary_key=True);email=db.Column(db.String(255),unique=True,index=True,nullable=False);password_hash=db.Column(db.String(255),nullable=False);full_name=db.Column(db.String(120),nullable=False);profile=db.relationship('StudentProfile',backref='user',uselist=False,cascade='all,delete-orphan');state_record=db.relationship('UserState',backref='user',uselist=False,cascade='all,delete-orphan')
 class StudentProfile(TimestampMixin,db.Model):
  __tablename__='student_profiles';id=db.Column(db.Integer,primary_key=True);user_id=db.Column(db.Integer,db.ForeignKey('users.id',ondelete='CASCADE'),unique=True,nullable=False);student_id=db.Column(db.String(64),unique=True,index=True,nullable=False);course=db.Column(db.String(120),nullable=False);year=db.Column(db.String(20),nullable=False)
+class UserState(TimestampMixin,db.Model):
+ __tablename__='user_states';id=db.Column(db.Integer,primary_key=True);user_id=db.Column(db.Integer,db.ForeignKey('users.id',ondelete='CASCADE'),unique=True,index=True,nullable=False);data=db.Column(db.JSON,nullable=False,default=dict)
 class Content(db.Model):
  __abstract__=True;id=db.Column(db.String(64),primary_key=True);title=db.Column(db.String(255),nullable=False);payload=db.Column(db.JSON,nullable=False);created_at=db.Column(db.DateTime(timezone=True),default=now,nullable=False)
 class Lesson(Content):__tablename__='lessons'

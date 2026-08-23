@@ -1,0 +1,24 @@
+{
+  "name": "PythonPro",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspaces/pythonpro",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "24"
+    }
+  },
+  "forwardPorts": [5173, 5000],
+  "portsAttributes": {
+    "5173": {
+      "label": "PythonPro web app",
+      "onAutoForward": "openBrowser"
+    },
+    "5000": {
+      "label": "PythonPro Flask API",
+      "onAutoForward": "silent"
+    }
+  },
+  "postCreateCommand": "bash .devcontainer/setup.sh",
+  "postStartCommand": "bash .devcontainer/start-services.sh"
+}

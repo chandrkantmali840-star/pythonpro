@@ -1,11 +1,29 @@
 from flask import Blueprint,jsonify,request
 from flask_jwt_extended import jwt_required,get_jwt_identity
 from ..extensions import db
-from ..models import Lesson,LessonProgress,Question,QuestionAttempt,Quiz,CodingProblem,CodingSubmission,Project,ProjectProgress,Bookmark,User
+from ..models import Lesson,LessonProgress,Question,QuestionAttempt,Quiz,CodingProblem,CodingSubmission,Project,ProjectProgress,Bookmark,User,UserState
 from ..services.execution_service import SafeMockExecutionService
 bp=Blueprint('api',__name__);runner=SafeMockExecutionService()
 def uid():return int(get_jwt_identity())
 def dump(x):return{'id':x.id,'title':x.title,**(x.payload or{})}
+@bp.get('/health')
+def health():return jsonify(status='ok')
+@bp.get('/state')
+@jwt_required()
+def state_get():
+ record=UserState.query.filter_by(user_id=uid()).first()
+ return jsonify((record.data if record else {}) or {})
+@bp.put('/state')
+@jwt_required()
+def state_put():
+ data=request.get_json(silent=True)
+ if not isinstance(data,dict):return jsonify(error='State must be a JSON object'),400
+ data.pop('user',None)
+ record=UserState.query.filter_by(user_id=uid()).first()
+ if record:record.data=data
+ else:db.session.add(UserState(user_id=uid(),data=data))
+ db.session.commit()
+ return jsonify(saved=True)
 @bp.get('/lessons')
 def lessons():return jsonify([dump(x)for x in Lesson.query.all()])
 @bp.get('/lessons/<item_id>')

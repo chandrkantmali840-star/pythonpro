@@ -1,12 +1,24 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it } from "vitest";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { authService } from "../services/authService";
 import { AppProvider, useApp } from "./AppContext";
 import {
   initialState,
   persistenceService,
 } from "../services/persistenceService";
 import { recordMeaningfulActivity } from "../services/streakService";
+
+vi.mock("../services/authService", () => ({
+  apiAuthenticationEnabled: false,
+  authService: {
+    currentUser: vi.fn(),
+    login: vi.fn(),
+    logout: vi.fn(),
+    register: vi.fn(),
+    token: vi.fn(),
+  },
+}));
 
 const user = {
   id: "student-1",
@@ -32,20 +44,13 @@ describe("streak persistence around account actions", () => {
     expect(refreshed.streak.activeDates).toHaveLength(1);
   });
 
-  it("keeps streak data unchanged through logout and login", () => {
+  it("keeps streak data unchanged through logout and login", async () => {
     const state = recordMeaningfulActivity(
       { ...initialState, user },
       "learning:lesson-1-concept",
     );
     persistenceService.save(state);
-    localStorage.setItem(
-      "pythonpro.auth",
-      JSON.stringify({
-        email: user.email,
-        passwordHash: btoa("password"),
-        user,
-      }),
-    );
+    vi.mocked(authService.login).mockResolvedValue(user);
     render(
       <AppProvider>
         <AccountProbe />
@@ -55,7 +60,9 @@ describe("streak persistence around account actions", () => {
     fireEvent.click(screen.getByRole("button", { name: "Log out test" }));
     expect(screen.getByTestId("streak").textContent).toBe(before);
     fireEvent.click(screen.getByRole("button", { name: "Log in test" }));
-    expect(screen.getByTestId("streak").textContent).toBe(before);
+    await waitFor(() =>
+      expect(screen.getByTestId("streak").textContent).toBe(before),
+    );
   });
 });
 
