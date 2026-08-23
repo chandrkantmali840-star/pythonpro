@@ -4,11 +4,11 @@
   "service": "app",
   "workspaceFolder": "/workspaces/pythonpro",
   "features": {
-    "ghcr.io/devcontainers/features/node:1": {
-      "version": "24"
-    },
     "ghcr.io/devcontainers/features/sshd:1": {
       "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "24"
     }
   },
   "forwardPorts": [5173, 5000],
